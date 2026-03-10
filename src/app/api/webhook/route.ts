@@ -1,11 +1,11 @@
 // app/api/webhook/route.ts — Facebook Messenger Webhook Handler
 // GET: Verify webhook subscription
-// POST: Process incoming messages via Claude AI
+// POST: Process incoming messages via Gemini AI
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
-import { generateResponse } from '@/lib/anthropic/client';
-import { buildPrompt } from '@/lib/anthropic/buildPrompt';
+import { generateResponse } from '@/lib/gemini/client';
+import { buildPrompt } from '@/lib/gemini/buildPrompt';
 import { sendFacebookMessage } from '@/lib/facebook/sendMessage';
 import { logEvent } from '@/lib/utils/logger';
 import type { BotSettings, FacebookWebhookEntry } from '@/types';
@@ -13,12 +13,16 @@ import type { BotSettings, FacebookWebhookEntry } from '@/types';
 export const runtime = 'nodejs';
 export const maxDuration = 30;
 
+/**
+ * GET /api/webhook — Facebook webhook verification
+ */
 export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const mode = searchParams.get('hub.mode');
     const token = searchParams.get('hub.verify_token');
     const challenge = searchParams.get('hub.challenge');
 
+    // Load verify token from database or env
     const verifyToken = process.env.VERIFY_TOKEN || 'messengerai_verify_2024';
 
     if (mode === 'subscribe' && token === verifyToken) {
@@ -29,9 +33,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Verification failed' }, { status: 403 });
 }
 
+/**
+ * POST /api/webhook — Process incoming Facebook messages
+ */
 export async function POST(request: NextRequest) {
+    // Return 200 immediately to avoid Facebook timeout
     const body = await request.json();
 
+    // Process messages asynchronously
     processWebhookEvent(body).catch((error) => {
         console.error('Webhook processing error:', error);
         logEvent('error', 'Webhook processing failed', { error: error.message });
@@ -40,11 +49,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ status: 'ok' }, { status: 200 });
 }
 
+/**
+ * Process the webhook event asynchronously
+ */
 async function processWebhookEvent(body: { object: string; entry: FacebookWebhookEntry[] }) {
     if (body.object !== 'page') return;
 
     const supabase = createServerClient();
 
+    // Load bot settings
     const { data: settingsData, error: settingsError } = await supabase
         .from('bot_settings')
         .select('*')
@@ -58,6 +71,7 @@ async function processWebhookEvent(body: { object: string; entry: FacebookWebhoo
 
     const settings = settingsData as BotSettings;
 
+    // Check if bot is active
     if (!settings.is_active) {
         await logEvent('info', 'Bot is inactive, skipping message');
         return;
@@ -72,6 +86,7 @@ async function processWebhookEvent(body: { object: string; entry: FacebookWebhoo
             const startTime = Date.now();
 
             try {
+                // Find or create conversation
                 let { data: conversation } = await supabase
                     .from('conversations')
                     .select('*')
@@ -97,6 +112,7 @@ async function processWebhookEvent(body: { object: string; entry: FacebookWebhoo
                     continue;
                 }
 
+                // Save user message
                 await supabase.from('messages').insert({
                     conversation_id: conversation.id,
                     facebook_user_id: senderId,
@@ -105,6 +121,7 @@ async function processWebhookEvent(body: { object: string; entry: FacebookWebhoo
                     is_ai_generated: false,
                 });
 
+                // Fetch last 10 messages for context
                 const { data: history } = await supabase
                     .from('messages')
                     .select('role, content')
@@ -116,6 +133,7 @@ async function processWebhookEvent(body: { object: string; entry: FacebookWebhoo
                     .reverse()
                     .map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }));
 
+                // Build system prompt and generate AI response
                 const systemPrompt = buildPrompt(settings);
                 const { text: aiReply, tokensUsed } = await generateResponse(
                     systemPrompt,
@@ -126,6 +144,7 @@ async function processWebhookEvent(body: { object: string; entry: FacebookWebhoo
 
                 const responseTime = Date.now() - startTime;
 
+                // Save AI response
                 await supabase.from('messages').insert({
                     conversation_id: conversation.id,
                     facebook_user_id: senderId,
@@ -136,6 +155,7 @@ async function processWebhookEvent(body: { object: string; entry: FacebookWebhoo
                     response_time_ms: responseTime,
                 });
 
+                // Update conversation
                 await supabase
                     .from('conversations')
                     .update({
@@ -145,8 +165,10 @@ async function processWebhookEvent(body: { object: string; entry: FacebookWebhoo
                     })
                     .eq('id', conversation.id);
 
+                // Send reply via Facebook
                 await sendFacebookMessage(senderId, aiReply, settings.page_access_token);
 
+                // Log success
                 await logEvent('info', 'Message processed successfully', {
                     senderId,
                     tokensUsed,

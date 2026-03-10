@@ -20,21 +20,25 @@ export function useAnalytics() {
             setStatsLoading(true);
             const today = startOfDay(new Date()).toISOString();
 
+            // Total conversations
             const { count: totalConversations } = await supabase
                 .from('conversations')
                 .select('*', { count: 'exact', head: true });
 
+            // Messages today
             const { count: messagesToday } = await supabase
                 .from('messages')
                 .select('*', { count: 'exact', head: true })
                 .gte('created_at', today);
 
+            // Active users (conversations with messages in last 24h)
             const { count: activeUsers } = await supabase
                 .from('conversations')
                 .select('*', { count: 'exact', head: true })
                 .eq('status', 'active')
                 .gte('last_message_at', subDays(new Date(), 1).toISOString());
 
+            // Average response time
             const { data: responseData } = await supabase
                 .from('messages')
                 .select('response_time_ms')
@@ -44,7 +48,7 @@ export function useAnalytics() {
                 .order('created_at', { ascending: false });
 
             const avgResponseTime = responseData && responseData.length > 0
-                ? Math.round(responseData.reduce((acc, m) => acc + m.response_time_ms, 0) / responseData.length)
+                ? Math.round(responseData.reduce((acc: number, m: { response_time_ms: number }) => acc + m.response_time_ms, 0) / responseData.length)
                 : 0;
 
             setStats({
@@ -65,6 +69,7 @@ export function useAnalytics() {
             setAnalyticsLoading(true);
             const thirtyDaysAgo = subDays(new Date(), 30).toISOString();
 
+            // Messages per day (last 30 days)
             const { data: messagesData } = await supabase
                 .from('messages')
                 .select('created_at')
@@ -76,13 +81,14 @@ export function useAnalytics() {
                 const date = format(subDays(new Date(), i), 'MMM dd');
                 messagesPerDay[date] = 0;
             }
-            messagesData?.forEach((m) => {
+            messagesData?.forEach((m: { created_at: string }) => {
                 const date = format(new Date(m.created_at), 'MMM dd');
                 if (messagesPerDay[date] !== undefined) {
                     messagesPerDay[date]++;
                 }
             });
 
+            // User vs Bot messages
             const { count: userMessages } = await supabase
                 .from('messages')
                 .select('*', { count: 'exact', head: true })
@@ -93,18 +99,20 @@ export function useAnalytics() {
                 .select('*', { count: 'exact', head: true })
                 .eq('role', 'assistant');
 
+            // Top 5 conversations
             const { data: topConversations } = await supabase
                 .from('conversations')
                 .select('*')
                 .order('message_count', { ascending: false })
                 .limit(5);
 
+            // Total tokens used
             const { data: tokensData } = await supabase
                 .from('messages')
                 .select('tokens_used')
                 .eq('role', 'assistant');
 
-            const totalTokensUsed = tokensData?.reduce((acc, m) => acc + (m.tokens_used || 0), 0) || 0;
+            const totalTokensUsed = tokensData?.reduce((acc: number, m: { tokens_used: number }) => acc + (m.tokens_used || 0), 0) || 0;
 
             setAnalytics({
                 messagesPerDay: Object.entries(messagesPerDay).map(([date, count]) => ({ date, count })),
@@ -114,7 +122,7 @@ export function useAnalytics() {
                 ],
                 topConversations: (topConversations || []) as any,
                 totalTokensUsed,
-                estimatedCost: totalTokensUsed * 0.000003,
+                estimatedCost: totalTokensUsed * 0.000003, // rough estimate
             });
         } catch (error) {
             console.error('Error fetching analytics:', error);

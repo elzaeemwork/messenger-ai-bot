@@ -1,28 +1,46 @@
 // config/app.config.ts — App-wide configuration (desktop-ready)
 
 const appConfig = {
+    /** Base URL for API calls (supports both web and future desktop) */
     baseUrl: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+
+    /** App name displayed in the UI */
     appName: 'MessengerAI Bot',
-    defaultModel: 'claude-sonnet-4-20250514',
+
+    /** Default AI model */
+    defaultModel: 'gemini-2.0-flash',
+
+    /** Available AI models */
     models: [
-        { id: 'claude-sonnet-4-20250514', name: 'Claude Sonnet 4', description: 'Best balance of speed and quality' },
-        { id: 'claude-haiku-4-20250414', name: 'Claude Haiku 4', description: 'Fastest responses, lower cost' },
+        { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', description: 'Fast & smart — best for chat' },
+        { id: 'gemini-2.0-flash-lite', name: 'Gemini 2.0 Flash Lite', description: 'Fastest, lowest cost' },
+        { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', description: 'Most capable, higher cost' },
     ],
+
+    /** Available dialects */
     dialects: [
-        { id: 'iraqi', name: '\u0639\u0631\u0627\u0642\u064a\u0629', nameEn: 'Iraqi' },
-        { id: 'gulf', name: '\u062e\u0644\u064a\u062c\u064a\u0629', nameEn: 'Gulf' },
-        { id: 'egyptian', name: '\u0645\u0635\u0631\u064a\u0629', nameEn: 'Egyptian' },
-        { id: 'levantine', name: '\u0634\u0627\u0645\u064a\u0629', nameEn: 'Levantine' },
-        { id: 'msa', name: '\u0641\u0635\u062d\u0649', nameEn: 'Modern Standard' },
+        { id: 'iraqi', name: 'عراقية', nameEn: 'Iraqi' },
+        { id: 'gulf', name: 'خليجية', nameEn: 'Gulf' },
+        { id: 'egyptian', name: 'مصرية', nameEn: 'Egyptian' },
+        { id: 'levantine', name: 'شامية', nameEn: 'Levantine' },
+        { id: 'msa', name: 'فصحى', nameEn: 'Modern Standard' },
     ],
+
+    /** Available tones */
     tones: [
-        { id: 'friendly', name: '\u0648\u062f\u064a\u0629', nameEn: 'Friendly' },
-        { id: 'formal', name: '\u0631\u0633\u0645\u064a\u0629', nameEn: 'Formal' },
-        { id: 'casual', name: '\u0639\u0627\u062f\u064a\u0629', nameEn: 'Casual' },
-        { id: 'enthusiastic', name: '\u062d\u0645\u0627\u0633\u064a\u0629', nameEn: 'Enthusiastic' },
+        { id: 'friendly', name: 'ودية', nameEn: 'Friendly' },
+        { id: 'formal', name: 'رسمية', nameEn: 'Formal' },
+        { id: 'casual', name: 'عادية', nameEn: 'Casual' },
+        { id: 'enthusiastic', name: 'حماسية', nameEn: 'Enthusiastic' },
     ],
+
+    /** Facebook Graph API version */
     facebookApiVersion: 'v19.0',
+
+    /** Logs auto-refresh interval (ms) */
     logsRefreshInterval: 10000,
+
+    /** Max conversation history to send to Gemini */
     maxHistoryMessages: 10,
 };
 

@@ -16,7 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import appConfig from '@/config/app.config';
-import { buildPrompt } from '@/lib/anthropic/buildPrompt';
+import { buildPrompt } from '@/lib/gemini/buildPrompt';
 import type { BotSettings, Service } from '@/types';
 import {
     Building2, Bot, Facebook, Plus, Trash2, Save, Copy, CheckCircle2,
@@ -139,7 +139,7 @@ export default function SettingsPage() {
                                     <Input
                                         value={formData.business_name || ''}
                                         onChange={(e) => setFormData({ ...formData, business_name: e.target.value })}
-                                        placeholder="\u0627\u0633\u0645 \u0627\u0644\u0639\u0645\u0644"
+                                        placeholder="اسم العمل"
                                         className="bg-slate-900/50 border-slate-700/50"
                                     />
                                 </div>
@@ -148,7 +148,7 @@ export default function SettingsPage() {
                                     <Input
                                         value={formData.phone || ''}
                                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                        placeholder="\u0631\u0642\u0645 \u0627\u0644\u0647\u0627\u062a\u0641"
+                                        placeholder="رقم الهاتف"
                                         className="bg-slate-900/50 border-slate-700/50"
                                     />
                                 </div>
@@ -159,7 +159,7 @@ export default function SettingsPage() {
                                 <Textarea
                                     value={formData.business_description || ''}
                                     onChange={(e) => setFormData({ ...formData, business_description: e.target.value })}
-                                    placeholder="\u0648\u0635\u0641 \u0645\u062e\u062a\u0635\u0631 \u0639\u0646 \u0627\u0644\u0639\u0645\u0644..."
+                                    placeholder="وصف مختصر عن العمل..."
                                     className="bg-slate-900/50 border-slate-700/50 min-h-[100px]"
                                 />
                             </div>
@@ -179,7 +179,7 @@ export default function SettingsPage() {
                                     <Input
                                         value={formData.address || ''}
                                         onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                                        placeholder="\u0627\u0644\u0639\u0646\u0648\u0627\u0646"
+                                        placeholder="العنوان"
                                         className="bg-slate-900/50 border-slate-700/50"
                                     />
                                 </div>
@@ -188,7 +188,7 @@ export default function SettingsPage() {
                                     <Input
                                         value={formData.whatsapp || ''}
                                         onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
-                                        placeholder="\u0631\u0642\u0645 \u0627\u0644\u0648\u0627\u062a\u0633\u0627\u0628"
+                                        placeholder="رقم الواتساب"
                                         className="bg-slate-900/50 border-slate-700/50"
                                     />
                                 </div>
@@ -290,7 +290,7 @@ export default function SettingsPage() {
                                 <div className="space-y-2">
                                     <Label className="text-slate-300">AI Model</Label>
                                     <Select
-                                        value={formData.ai_model || 'claude-sonnet-4-20250514'}
+                                        value={formData.ai_model || 'gemini-2.0-flash'}
                                         onValueChange={(value) => setFormData({ ...formData, ai_model: value })}
                                     >
                                         <SelectTrigger className="bg-slate-900/50 border-slate-700/50">
@@ -299,7 +299,7 @@ export default function SettingsPage() {
                                         <SelectContent className="bg-slate-800 border-slate-700">
                                             {appConfig.models.map((m) => (
                                                 <SelectItem key={m.id} value={m.id}>
-                                                    {m.name} \u2014 {m.description}
+                                                    {m.name} — {m.description}
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
@@ -330,7 +330,7 @@ export default function SettingsPage() {
                                 <Textarea
                                     value={formData.custom_rules || ''}
                                     onChange={(e) => setFormData({ ...formData, custom_rules: e.target.value })}
-                                    placeholder="\u062a\u0639\u0644\u064a\u0645\u0627\u062a \u0625\u0636\u0627\u0641\u064a\u0629 \u0644\u0644\u0628\u0648\u062a... (\u0645\u062b\u0627\u0644: \u0644\u0627 \u062a\u0631\u062f \u0639\u0644\u0649 \u0623\u0633\u0626\u0644\u0629 \u0627\u0644\u0645\u0646\u0627\u0641\u0633\u064a\u0646)"
+                                    placeholder="تعليمات إضافية للبوت... (مثال: لا ترد على أسئلة المنافسين)"
                                     className="bg-slate-900/50 border-slate-700/50 min-h-[100px]"
                                 />
                             </div>
@@ -429,7 +429,7 @@ export default function SettingsPage() {
                                 </div>
                                 <Switch
                                     checked={formData.is_active || false}
-                                    onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
+                                    onCheckedChange={(checked: boolean) => setFormData({ ...formData, is_active: checked })}
                                 />
                             </div>
 

@@ -15,7 +15,7 @@ interface ConversationDetailProps {
     conversation: Conversation;
     messages: Message[];
     loading: boolean;
-    onBack: () => void;
+    onBack?: () => void;
 }
 
 export default function ConversationDetail({

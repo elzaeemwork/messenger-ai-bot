@@ -5,7 +5,7 @@
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { useConversations } from '@/hooks/useConversations';
 import { useBotStore } from '@/store/botStore';
-import StatsCards from '@/components/dashboard/StatsCards';
+import DashboardStatsCards from '@/components/dashboard/DashboardStatsCards';
 import ActivityChart from '@/components/dashboard/ActivityChart';
 import RecentConversations from '@/components/dashboard/RecentConversations';
 import { Switch } from '@/components/ui/switch';
@@ -56,7 +56,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Stats Cards */}
-            <StatsCards stats={stats} loading={statsLoading} />
+            <DashboardStatsCards stats={stats} loading={statsLoading} />
 
             {/* Charts & Conversations */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

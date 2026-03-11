@@ -1,48 +1,37 @@
-// components/dashboard/RecentConversations.tsx — Latest conversations list
+// components/dashboard/RecentConversations.tsx — Last 5 conversations widget
 
 'use client';
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { createClient } from '@/lib/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MessageSquare, ArrowRight } from 'lucide-react';
-import { timeAgo, truncate } from '@/lib/utils/formatters';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 import type { Conversation } from '@/types';
+import { timeAgo, truncate } from '@/lib/utils/formatters';
 
-export default function RecentConversations() {
-    const [conversations, setConversations] = useState<Conversation[]>([]);
-    const [loading, setLoading] = useState(true);
+import React from 'react';
 
-    useEffect(() => {
-        async function fetchConversations() {
-            const supabase = createClient();
-            const { data } = await supabase
-                .from('conversations')
-                .select('*')
-                .order('last_message_at', { ascending: false })
-                .limit(5);
+interface RecentConversationsProps {
+    conversations: Conversation[];
+    loading: boolean;
+}
 
-            setConversations((data || []) as Conversation[]);
-            setLoading(false);
-        }
-
-        fetchConversations();
-    }, []);
-
+const RecentConversations: React.FC<RecentConversationsProps> = ({ conversations, loading }) => {
     if (loading) {
         return (
-            <Card className="glass border-slate-800">
-                <CardHeader><CardTitle className="text-lg">Recent Conversations</CardTitle></CardHeader>
+            <Card className="bg-slate-800/50 border-slate-700/50">
+                <CardHeader>
+                    <Skeleton className="h-5 w-44" />
+                </CardHeader>
                 <CardContent className="space-y-4">
                     {[...Array(5)].map((_, i) => (
                         <div key={i} className="flex items-center gap-3">
                             <Skeleton className="h-10 w-10 rounded-full" />
                             <div className="flex-1">
                                 <Skeleton className="h-4 w-24 mb-1" />
-                                <Skeleton className="h-3 w-36" />
+                                <Skeleton className="h-3 w-48" />
                             </div>
                         </div>
                     ))}
@@ -52,42 +41,58 @@ export default function RecentConversations() {
     }
 
     return (
-        <Card className="glass border-slate-800">
+        <Card className="bg-slate-800/50 border-slate-700/50">
             <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-lg text-slate-200">Recent Conversations</CardTitle>
-                <Link href="/dashboard/conversations" className="text-sm text-indigo-400 hover:text-indigo-300 flex items-center gap-1">
-                    View all <ArrowRight className="w-3 h-3" />
+                <CardTitle className="text-base font-semibold text-white">
+                    Recent Conversations
+                </CardTitle>
+                <Link href="/dashboard/conversations">
+                    <Button variant="ghost" size="sm" className="text-indigo-400 hover:text-indigo-300 gap-1">
+                        View All <ArrowRight className="w-3.5 h-3.5" />
+                    </Button>
                 </Link>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent>
                 {conversations.length === 0 ? (
-                    <p className="text-sm text-slate-500 text-center py-8">No conversations yet</p>
+                    <div className="text-center py-8 text-slate-500">
+                        <MessageSquare className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm">No conversations yet</p>
+                    </div>
                 ) : (
-                    conversations.map((conv) => (
-                        <Link
-                            key={conv.id}
-                            href="/dashboard/conversations"
-                            className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800/50 transition-colors"
-                        >
-                            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-800">
-                                <MessageSquare className="w-4 h-4 text-slate-400" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between">
-                                    <p className="text-sm font-medium text-slate-200">
-                                        {conv.user_name || `User ${conv.facebook_user_id.slice(-4)}`}
-                                    </p>
-                                    <span className="text-[10px] text-slate-500">{timeAgo(conv.last_message_at || conv.created_at)}</span>
+                    <div className="space-y-3">
+                        {conversations.slice(0, 5).map((conv) => (
+                            <Link
+                                key={conv.id}
+                                href="/dashboard/conversations"
+                                className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-700/30 transition-colors group"
+                            >
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500/20 to-cyan-500/20 border border-slate-700 flex items-center justify-center text-sm font-medium text-indigo-300">
+                                    {conv.user_name.charAt(0).toUpperCase()}
                                 </div>
-                                <p className="text-xs text-slate-400 truncate">{truncate(conv.last_message || '', 40)}</p>
-                            </div>
-                            <Badge variant={conv.status === 'active' ? 'success' : 'secondary'} className="text-[10px]">
-                                {conv.message_count}
-                            </Badge>
-                        </Link>
-                    ))
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm font-medium text-white truncate">
+                                            {conv.user_name}
+                                        </span>
+                                        <Badge
+                                            variant={conv.status === 'active' ? 'success' : 'secondary'}
+                                            className="text-[10px] px-1.5"
+                                        >
+                                            {conv.status}
+                                        </Badge>
+                                    </div>
+                                    <p className="text-xs text-slate-500 truncate">{truncate(conv.last_message, 40)}</p>
+                                </div>
+                                <span className="text-[10px] text-slate-600 whitespace-nowrap">
+                                    {timeAgo(conv.last_message_at)}
+                                </span>
+                            </Link>
+                        ))}
+                    </div>
                 )}
             </CardContent>
         </Card>
     );
-}
+};
+
+export default RecentConversations;

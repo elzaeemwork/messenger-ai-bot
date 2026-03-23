@@ -2,6 +2,7 @@
 
 import { create } from 'zustand';
 import type { BotSettings, Conversation, SystemLog, DashboardStats } from '@/types';
+import type { Language } from '@/lib/i18n/translations';
 
 interface BotState {
     settings: BotSettings | null;
@@ -24,6 +25,9 @@ interface BotState {
     setLogsLoading: (loading: boolean) => void;
     sidebarOpen: boolean;
     setSidebarOpen: (open: boolean) => void;
+    // Language
+    language: Language;
+    setLanguage: (lang: Language) => void;
 }
 
 export const useBotStore = create<BotState>((set) => ({
@@ -47,4 +51,12 @@ export const useBotStore = create<BotState>((set) => ({
     setLogsLoading: (logsLoading) => set({ logsLoading }),
     sidebarOpen: false,
     setSidebarOpen: (sidebarOpen) => set({ sidebarOpen }),
+    // Language state - defaults to 'en', init from localStorage via LanguageProvider
+    language: 'en',
+    setLanguage: (lang) => {
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('app-language', lang);
+        }
+        set({ language: lang });
+    },
 }));

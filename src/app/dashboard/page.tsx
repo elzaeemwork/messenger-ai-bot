@@ -1,4 +1,4 @@
-// app/dashboard/page.tsx — Main dashboard overview page
+// app/dashboard/page.tsx — Main dashboard overview page with i18n support
 
 'use client';
 
@@ -11,12 +11,15 @@ import RecentConversations from '@/components/dashboard/RecentConversations';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent } from '@/components/ui/card';
 import { useSettings } from '@/hooks/useSettings';
-import { Bot, Power } from 'lucide-react';
+import { Power } from 'lucide-react';
+import translations from '@/lib/i18n/translations';
 
 export default function DashboardPage() {
     const { stats, statsLoading, analytics, analyticsLoading } = useAnalytics();
     const { conversations, conversationsLoading } = useConversations();
     const { settings, updateSettings } = useSettings();
+    const language = useBotStore((s) => s.language);
+    const t = translations[language].dashboard;
 
     const chartData = analytics?.messagesPerDay?.slice(-7) || [];
 
@@ -25,10 +28,8 @@ export default function DashboardPage() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-                    <p className="text-sm text-slate-400 mt-1">
-                        Overview of your MessengerAI bot performance
-                    </p>
+                    <h1 className="text-2xl font-bold text-white">{t.title}</h1>
+                    <p className="text-sm text-slate-400 mt-1">{t.subtitle}</p>
                 </div>
 
                 {/* Bot Toggle */}
@@ -41,15 +42,15 @@ export default function DashboardPage() {
                             <Power className="w-4 h-4" />
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-xs font-medium text-white">Bot Status</span>
+                            <span className="text-xs font-medium text-white">{t.botStatus}</span>
                             <span className={`text-[10px] ${settings?.is_active ? 'text-emerald-400' : 'text-slate-500'}`}>
-                                {settings?.is_active ? 'Online & Responding' : 'Offline'}
+                                {settings?.is_active ? t.online : t.offline}
                             </span>
                         </div>
                         <Switch
                             checked={settings?.is_active || false}
                             onCheckedChange={(checked) => updateSettings({ is_active: checked })}
-                            className="ml-2"
+                            className="ms-2"
                         />
                     </CardContent>
                 </Card>

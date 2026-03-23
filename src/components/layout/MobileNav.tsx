@@ -1,4 +1,4 @@
-// components/layout/MobileNav.tsx — Bottom navigation bar for mobile devices
+// components/layout/MobileNav.tsx — Bottom navigation bar for mobile devices with i18n support
 
 'use client';
 
@@ -6,17 +6,21 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, MessageSquare, Settings, BarChart3, ScrollText } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
-
-const navItems = [
-    { href: '/dashboard', label: 'Home', icon: LayoutDashboard },
-    { href: '/dashboard/conversations', label: 'Chat', icon: MessageSquare },
-    { href: '/dashboard/analytics', label: 'Stats', icon: BarChart3 },
-    { href: '/dashboard/settings', label: 'Config', icon: Settings },
-    { href: '/dashboard/logs', label: 'Logs', icon: ScrollText },
-];
+import { useBotStore } from '@/store/botStore';
+import translations from '@/lib/i18n/translations';
 
 export default function MobileNav() {
     const pathname = usePathname();
+    const language = useBotStore((s) => s.language);
+    const t = translations[language].nav;
+
+    const navItems = [
+        { href: '/dashboard', label: t.home, icon: LayoutDashboard },
+        { href: '/dashboard/conversations', label: t.chat, icon: MessageSquare },
+        { href: '/dashboard/analytics', label: t.stats, icon: BarChart3 },
+        { href: '/dashboard/settings', label: t.config, icon: Settings },
+        { href: '/dashboard/logs', label: t.logs, icon: ScrollText },
+    ];
 
     return (
         <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around h-16 bg-slate-900/95 border-t border-slate-800 backdrop-blur-md">

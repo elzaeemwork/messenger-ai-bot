@@ -1,7 +1,8 @@
-// app/layout.tsx — Root layout with dark theme, fonts, and toast provider
+// app/layout.tsx — Root layout with dark theme, fonts, toast provider, and language support
 
 import type { Metadata } from 'next';
 import { Toaster } from 'react-hot-toast';
+import LanguageProvider from '@/components/layout/LanguageProvider';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -16,9 +17,19 @@ export default function RootLayout({
     children: React.ReactNode;
 }) {
     return (
-        <html lang="en" className="dark">
+        <html lang="en" dir="ltr" className="dark">
+            <head>
+                <link rel="preconnect" href="https://fonts.googleapis.com" />
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+                <link
+                    href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;500;600;700&display=swap"
+                    rel="stylesheet"
+                />
+            </head>
             <body className="min-h-screen bg-[#0f172a]">
-                {children}
+                <LanguageProvider>
+                    {children}
+                </LanguageProvider>
                 <Toaster
                     position="top-right"
                     toastOptions={{

@@ -1,4 +1,4 @@
-// components/layout/Sidebar.tsx — Fixed sidebar navigation with bot status
+// components/layout/Sidebar.tsx — Fixed sidebar navigation with bot status and i18n support
 
 'use client';
 
@@ -10,21 +10,28 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { useBotStore } from '@/store/botStore';
-
-const navItems = [
-    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/dashboard/conversations', label: 'Conversations', icon: MessageSquare },
-    { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart3 },
-    { href: '/dashboard/settings', label: 'Settings', icon: Settings },
-    { href: '/dashboard/logs', label: 'System Logs', icon: ScrollText },
-];
+import translations from '@/lib/i18n/translations';
 
 export default function Sidebar() {
     const pathname = usePathname();
-    const { settings } = useBotStore();
+    const { settings, language } = useBotStore();
+    const t = translations[language];
+
+    const navItems = [
+        { href: '/dashboard', label: t.nav.dashboard, icon: LayoutDashboard },
+        { href: '/dashboard/conversations', label: t.nav.conversations, icon: MessageSquare },
+        { href: '/dashboard/analytics', label: t.nav.analytics, icon: BarChart3 },
+        { href: '/dashboard/settings', label: t.nav.settings, icon: Settings },
+        { href: '/dashboard/logs', label: t.nav.logs, icon: ScrollText },
+    ];
 
     return (
-        <aside className="hidden lg:flex flex-col w-64 h-screen bg-slate-900/50 border-r border-slate-800 backdrop-blur-sm fixed left-0 top-0 z-40">
+        <aside className={cn(
+            'hidden lg:flex flex-col w-64 h-screen bg-slate-900/50 border-slate-800 backdrop-blur-sm fixed top-0 z-40',
+            language === 'ar'
+                ? 'border-l right-0'
+                : 'border-r left-0'
+        )}>
             {/* Logo */}
             <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-800">
                 <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-500 shadow-lg shadow-indigo-500/25">
@@ -32,7 +39,7 @@ export default function Sidebar() {
                 </div>
                 <div>
                     <h1 className="text-lg font-bold gradient-text">MessengerAI</h1>
-                    <p className="text-[10px] text-slate-500 uppercase tracking-widest">Bot Dashboard</p>
+                    <p className="text-[10px] text-slate-500 uppercase tracking-widest">{t.sidebar.botDashboard}</p>
                 </div>
             </div>
 
@@ -72,10 +79,10 @@ export default function Sidebar() {
                     </div>
                     <div>
                         <p className="text-xs font-medium text-slate-300">
-                            Bot {settings?.is_active ? 'Active' : 'Inactive'}
+                            {t.common.bot} {settings?.is_active ? t.sidebar.botActive : t.sidebar.botInactive}
                         </p>
                         <p className="text-[10px] text-slate-500">
-                            {settings?.ai_model || 'Not configured'}
+                            {settings?.ai_model || t.sidebar.notConfigured}
                         </p>
                     </div>
                 </div>

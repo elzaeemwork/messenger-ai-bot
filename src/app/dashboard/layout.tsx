@@ -2,6 +2,7 @@
 
 'use client';
 
+import type { ReactNode } from 'react';
 import Sidebar from '@/components/layout/Sidebar';
 import TopBar from '@/components/layout/TopBar';
 import MobileNav from '@/components/layout/MobileNav';
@@ -10,7 +11,7 @@ import { useBotStore } from '@/store/botStore';
 export default function DashboardLayout({
     children,
 }: {
-    children: React.ReactNode;
+    children: ReactNode;
 }) {
     const language = useBotStore((s) => s.language);
     const isRtl = language === 'ar';

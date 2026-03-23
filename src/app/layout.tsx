@@ -1,6 +1,7 @@
 // app/layout.tsx — Root layout with dark theme, fonts, toast provider, and language support
 
 import type { Metadata } from 'next';
+import type { ReactNode } from 'react';
 import { Toaster } from 'react-hot-toast';
 import LanguageProvider from '@/components/layout/LanguageProvider';
 import './globals.css';
@@ -14,7 +15,7 @@ export const metadata: Metadata = {
 export default function RootLayout({
     children,
 }: {
-    children: React.ReactNode;
+    children: ReactNode;
 }) {
     return (
         <html lang="en" dir="ltr" className="dark">

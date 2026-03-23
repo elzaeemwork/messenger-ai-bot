@@ -3,10 +3,11 @@
 'use client';
 
 import { useEffect } from 'react';
+import type { ReactNode } from 'react';
 import { useBotStore } from '@/store/botStore';
 import type { Language } from '@/lib/i18n/translations';
 
-export default function LanguageProvider({ children }: { children: React.ReactNode }) {
+export default function LanguageProvider({ children }: { children: ReactNode }) {
     const setLanguage = useBotStore((s) => s.setLanguage);
     const language = useBotStore((s) => s.language);
 

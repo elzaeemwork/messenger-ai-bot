@@ -33,11 +33,15 @@ export async function generateResponse(
         },
     });
 
-    // Convert message history to Gemini format
-    const history = messages.slice(0, -1).map((m) => ({
+    // Convert message history to Gemini format (excluding last message)
+    const rawHistory = messages.slice(0, -1).map((m) => ({
         role: m.role === 'assistant' ? 'model' : 'user',
         parts: [{ text: m.content }],
     }));
+
+    // Gemini requires history to start with 'user' role — drop any leading 'model' messages
+    const firstUserIdx = rawHistory.findIndex((m) => m.role === 'user');
+    const history = firstUserIdx >= 0 ? rawHistory.slice(firstUserIdx) : [];
 
     // The last message is the user's current message
     const lastMessage = messages[messages.length - 1];

@@ -4,7 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
-import { generateResponse } from '@/lib/gemini/client';
+import { generateResponse } from '@/lib/groq/client';
 import { buildPrompt } from '@/lib/gemini/buildPrompt';
 import { sendFacebookMessage } from '@/lib/facebook/sendMessage';
 import { logEvent } from '@/lib/utils/logger';

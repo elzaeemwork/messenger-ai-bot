@@ -37,24 +37,21 @@ export async function GET(request: NextRequest) {
  * POST /api/webhook — Process incoming Facebook messages
  */
 export async function POST(request: NextRequest) {
-    // Log every incoming request immediately
     let body: any;
     try {
         body = await request.json();
-        await logEvent('info', 'Webhook POST received', {
-            object: body?.object,
-            entryCount: body?.entry?.length ?? 0,
-        });
     } catch {
-        await logEvent('error', 'Webhook POST - failed to parse body');
         return NextResponse.json({ status: 'ok' }, { status: 200 });
     }
 
-    // Process messages asynchronously
-    processWebhookEvent(body).catch((error) => {
+    // Process synchronously to prevent Vercel from killing the function
+    // before processing completes (fire-and-forget would be killed after 200 response)
+    try {
+        await processWebhookEvent(body);
+    } catch (error: any) {
         console.error('Webhook processing error:', error);
-        logEvent('error', 'Webhook processing failed', { error: error.message });
-    });
+        await logEvent('error', 'Webhook processing failed', { error: error.message });
+    }
 
     return NextResponse.json({ status: 'ok' }, { status: 200 });
 }

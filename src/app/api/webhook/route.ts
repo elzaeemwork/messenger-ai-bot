@@ -37,8 +37,18 @@ export async function GET(request: NextRequest) {
  * POST /api/webhook — Process incoming Facebook messages
  */
 export async function POST(request: NextRequest) {
-    // Return 200 immediately to avoid Facebook timeout
-    const body = await request.json();
+    // Log every incoming request immediately
+    let body: any;
+    try {
+        body = await request.json();
+        await logEvent('info', 'Webhook POST received', {
+            object: body?.object,
+            entryCount: body?.entry?.length ?? 0,
+        });
+    } catch {
+        await logEvent('error', 'Webhook POST - failed to parse body');
+        return NextResponse.json({ status: 'ok' }, { status: 200 });
+    }
 
     // Process messages asynchronously
     processWebhookEvent(body).catch((error) => {

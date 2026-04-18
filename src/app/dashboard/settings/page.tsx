@@ -56,6 +56,7 @@ export default function SettingsPage() {
                 custom_rules: formData.custom_rules,
                 ai_model: formData.ai_model,
                 max_tokens: formData.max_tokens,
+                use_bytez: formData.use_bytez ?? true,
             });
         } else if (tab === 'facebook') {
             await updateSettings({
@@ -357,6 +358,36 @@ export default function SettingsPage() {
                                         </pre>
                                     </div>
                                 )}
+                            </div>
+
+                            {/* AI Provider Toggle */}
+                            <div className="flex items-center justify-between p-4 rounded-lg bg-slate-900/50 border border-slate-700/50">
+                                <div className="flex items-center gap-3">
+                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${formData.use_bytez !== false ? 'bg-violet-500/20 text-violet-400' : 'bg-amber-500/20 text-amber-400'}`}>
+                                        <Sparkles className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-white">
+                                            Primary AI: {formData.use_bytez !== false ? 'Bytez (Gemma 4)' : 'Groq (Llama 3.3)'}
+                                        </p>
+                                        <p className="text-xs text-slate-500">
+                                            {formData.use_bytez !== false
+                                                ? 'Gemma 4 is active — Groq is on standby'
+                                                : 'Groq only — Bytez is disabled'}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs text-slate-500">
+                                        {formData.use_bytez !== false ? 'ON' : 'OFF'}
+                                    </span>
+                                    <Switch
+                                        checked={formData.use_bytez !== false}
+                                        onCheckedChange={(checked: boolean) =>
+                                            setFormData({ ...formData, use_bytez: checked })
+                                        }
+                                    />
+                                </div>
                             </div>
 
                             <Button onClick={() => handleSave('personality')} className="gap-2 bg-indigo-600 hover:bg-indigo-500">

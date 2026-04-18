@@ -12,14 +12,20 @@ import { logEvent } from '@/lib/utils/logger';
 import type { BotSettings, FacebookWebhookEntry } from '@/types';
 
 /**
- * Bytez (Gemma 4) هو الأساسي — Groq (Llama 3.3) يعمل تلقائياً عند أي فشل
+ * Bytez (Gemma 4) أساسي — Groq (Llama 3.3) يعمل تلقائياً عند أي فشل
+ * إذا كان use_bytez=false يستخدم Groq مباشرة دون محاولة Bytez
  */
 async function generateAIResponse(
     systemPrompt: string,
     messages: { role: 'user' | 'assistant'; content: string }[],
     model: string,
-    maxTokens: number
+    maxTokens: number,
+    useBytez: boolean = true
 ): Promise<{ text: string; tokensUsed: number }> {
+    if (!useBytez) {
+        // Bytez disabled — use Groq directly
+        return await groqGenerate(systemPrompt, messages, model, maxTokens);
+    }
     try {
         return await bytezGenerate(systemPrompt, messages, model, maxTokens);
     } catch (bytezError: any) {
@@ -166,7 +172,8 @@ async function processWebhookEvent(body: { object: string; entry: FacebookWebhoo
                     systemPrompt,
                     messages,
                     settings.ai_model,
-                    settings.max_tokens
+                    settings.max_tokens,
+                    settings.use_bytez ?? true
                 );
 
                 const responseTime = Date.now() - startTime;

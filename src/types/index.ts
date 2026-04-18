@@ -15,6 +15,7 @@ export interface BotSettings {
     ai_model: string;
     max_tokens: number;
     is_active: boolean;
+    use_bytez: boolean;
     page_access_token: string;
     verify_token: string;
     created_at: string;

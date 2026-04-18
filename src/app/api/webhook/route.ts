@@ -12,7 +12,7 @@ import { logEvent } from '@/lib/utils/logger';
 import type { BotSettings, FacebookWebhookEntry } from '@/types';
 
 /**
- * Try Groq first (reliable), fall back to Bytez if needed
+ * Bytez (Gemma 4) هو الأساسي — Groq (Llama 3.3) يعمل تلقائياً عند أي فشل
  */
 async function generateAIResponse(
     systemPrompt: string,
@@ -21,10 +21,12 @@ async function generateAIResponse(
     maxTokens: number
 ): Promise<{ text: string; tokensUsed: number }> {
     try {
-        return await groqGenerate(systemPrompt, messages, model, maxTokens);
-    } catch (groqError: any) {
-        await logEvent('warning', 'Groq failed, falling back to Bytez', { error: groqError.message });
         return await bytezGenerate(systemPrompt, messages, model, maxTokens);
+    } catch (bytezError: any) {
+        await logEvent('warning', 'Bytez unavailable, switching to Groq', {
+            reason: bytezError.message?.slice(0, 100),
+        });
+        return await groqGenerate(systemPrompt, messages, model, maxTokens);
     }
 }
 

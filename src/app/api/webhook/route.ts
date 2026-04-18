@@ -12,7 +12,7 @@ import { logEvent } from '@/lib/utils/logger';
 import type { BotSettings, FacebookWebhookEntry } from '@/types';
 
 /**
- * Try Bytez first, fall back to Groq if Bytez fails
+ * Try Groq first (reliable), fall back to Bytez if needed
  */
 async function generateAIResponse(
     systemPrompt: string,
@@ -21,10 +21,10 @@ async function generateAIResponse(
     maxTokens: number
 ): Promise<{ text: string; tokensUsed: number }> {
     try {
-        return await bytezGenerate(systemPrompt, messages, model, maxTokens);
-    } catch (bytezError: any) {
-        await logEvent('warning', 'Bytez failed, falling back to Groq', { error: bytezError.message });
         return await groqGenerate(systemPrompt, messages, model, maxTokens);
+    } catch (groqError: any) {
+        await logEvent('warning', 'Groq failed, falling back to Bytez', { error: groqError.message });
+        return await bytezGenerate(systemPrompt, messages, model, maxTokens);
     }
 }
 

@@ -1,14 +1,32 @@
 // app/api/webhook/route.ts — Facebook Messenger Webhook Handler
 // GET: Verify webhook subscription
-// POST: Process incoming messages via Gemini AI
+// POST: Process incoming messages via Bytez AI (Groq as fallback)
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
-import { generateResponse } from '@/lib/groq/client';
+import { generateResponse as bytezGenerate } from '@/lib/bytez/client';
+import { generateResponse as groqGenerate } from '@/lib/groq/client';
 import { buildPrompt } from '@/lib/gemini/buildPrompt';
 import { sendFacebookMessage } from '@/lib/facebook/sendMessage';
 import { logEvent } from '@/lib/utils/logger';
 import type { BotSettings, FacebookWebhookEntry } from '@/types';
+
+/**
+ * Try Bytez first, fall back to Groq if Bytez fails
+ */
+async function generateAIResponse(
+    systemPrompt: string,
+    messages: { role: 'user' | 'assistant'; content: string }[],
+    model: string,
+    maxTokens: number
+): Promise<{ text: string; tokensUsed: number }> {
+    try {
+        return await bytezGenerate(systemPrompt, messages, model, maxTokens);
+    } catch (bytezError: any) {
+        await logEvent('warning', 'Bytez failed, falling back to Groq', { error: bytezError.message });
+        return await groqGenerate(systemPrompt, messages, model, maxTokens);
+    }
+}
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -140,9 +158,9 @@ async function processWebhookEvent(body: { object: string; entry: FacebookWebhoo
                     .reverse()
                     .map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }));
 
-                // Build system prompt and generate AI response
+                // Build system prompt and generate AI response (Bytez → Groq fallback)
                 const systemPrompt = buildPrompt(settings);
-                const { text: aiReply, tokensUsed } = await generateResponse(
+                const { text: aiReply, tokensUsed } = await generateAIResponse(
                     systemPrompt,
                     messages,
                     settings.ai_model,
